@@ -1,0 +1,22 @@
+{
+  "name": "xinhai-revolution-memorial",
+  "version": "1.0.0",
+  "description": "云游辛亥革命纪念馆 - 2D交互式游戏",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx http-server . -p 3000 -c-1",
+    "start": "npm run dev"
+  },
+  "keywords": [
+    "game",
+    "history",
+    "xinhai-revolution",
+    "interactive",
+    "2d"
+  ],
+  "author": "Developer",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

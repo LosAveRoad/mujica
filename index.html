@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云游辛亥革命纪念馆</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5dc;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #gameCanvas {
+            border: 2px solid #8B4513;
+            background-color: #2F4F4F;
+            cursor: crosshair;
+        }
+        
+        #itemModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        #itemContent {
+            background-color: #f5f5dc;
+            border: 3px solid #8B4513;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: hidden;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        #itemTitle {
+            font-size: 24px;
+            font-weight: bold;
+            color: #8B4513;
+            margin-bottom: 15px;
+        }
+        
+        #itemDescription {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        
+        #imageCarousel {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            max-height: 70vh;
+        }
+        
+        #imageContainer {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            border: 2px solid #8B4513;
+            border-radius: 10px;
+            background-color: #000;
+        }
+        
+        #imageSlider {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            height: 100%;
+            width: max-content;
+            align-items: center; /* 垂直居中对齐 */
+        }
+        
+        .carousel-image {
+            flex: 0 0 auto;
+            width: auto;
+            max-width: 100%;
+            height: auto;
+            max-height: 500px; /* 设置一个最大高度 */
+            object-fit: contain;
+            background-color: #000;
+            margin: 0 auto;
+        }
+        
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(139, 69, 19, 0.8);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            z-index: 1001;
+            transition: background-color 0.3s;
+        }
+        
+        .carousel-btn:hover {
+            background-color: rgba(139, 69, 19, 1);
+        }
+        
+        .carousel-btn:disabled {
+            background-color: rgba(139, 69, 19, 0.3);
+            cursor: not-allowed;
+        }
+        
+        #prevBtn {
+            left: 10px;
+        }
+        
+        #nextBtn {
+            right: 10px;
+        }
+        
+        #imageCounter {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 14px;
+            z-index: 1001;
+        }
+        
+        #closeBtn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            color: #8B4513;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 1002;
+            width: 36px;
+            height: 36px;
+            line-height: 36px;
+            text-align: center;
+            background: rgba(255,255,255,0.9);
+            border-radius: 50%;
+            user-select: none;
+            border: 2px solid #8B4513;
+            transition: all 0.2s ease;
+        }
+        
+        #closeBtn:hover {
+            background: rgba(255,255,255,1);
+            transform: scale(1.1);
+        }
+        
+        #instructions {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #fff;
+            font-size: 14px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        /* AI Chat Widget */
+        #aiChatToggle {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: #8B4513;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+            z-index: 2001;
+            user-select: none;
+            border: 2px solid #5e2f10;
+        }
+        
+        #aiChatWindow {
+            position: fixed;
+            right: 20px;
+            bottom: 90px;
+            width: 360px;
+            max-height: 70vh;
+            background: #f5f5dc;
+            border: 3px solid #8B4513;
+            border-radius: 10px;
+            display: none;
+            flex-direction: column;
+            z-index: 2002; /* 高于图片模态框 */
+            overflow: hidden;
+        }
+        #aiChatHeader {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: #8B4513;
+            color: #fff;
+        }
+        #aiChatHeader .title { font-weight: bold; }
+        #aiChatHeader .actions { display: flex; gap: 8px; }
+        .icon-btn {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 6px;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+        
+        #aiChatMessages {
+            flex: 1;
+            background: #fffbe6;
+            padding: 12px;
+            overflow-y: auto;
+        }
+        .chat-msg { margin-bottom: 10px; line-height: 1.5; }
+        .chat-msg.user { text-align: right; }
+        .bubble {
+            display: inline-block;
+            padding: 8px 10px;
+            border-radius: 8px;
+            max-width: 80%;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+        }
+        .user .bubble { background: #e6f7ff; border: 1px solid #91d5ff; }
+        .ai .bubble { background: #fff; border: 1px solid #8B4513; }
+        
+        #aiChatInputBar {
+            display: flex;
+            gap: 8px;
+            padding: 8px;
+            border-top: 1px solid #8B4513;
+            background: #f5f5dc;
+        }
+        #aiChatText {
+            flex: 1;
+            resize: none;
+            height: 42px;
+            border-radius: 6px;
+            border: 1px solid #8B4513;
+            padding: 8px;
+            font-family: inherit;
+        }
+        #aiSendBtn {
+            background: #8B4513;
+            color: #fff;
+            border: 1px solid #5e2f10;
+            border-radius: 6px;
+            padding: 0 14px;
+            cursor: pointer;
+        }
+        
+        #aiSettingsPanel {
+            display: none;
+            position: absolute;
+            right: 10px;
+            top: 48px;
+            background: #fffaf0;
+            border: 1px solid #8B4513;
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 2003;
+            width: calc(100% - 20px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        #aiSettingsPanel label { display: block; font-size: 12px; margin-top: 6px; color: #5e2f10; }
+        #aiSettingsPanel input { width: 100%; padding: 6px; border: 1px solid #8B4513; border-radius: 6px; }
+        #aiSaveSettings { margin-top: 8px; width: 100%; background: #8B4513; color: #fff; border: 1px solid #5e2f10; border-radius: 6px; padding: 6px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="1000" height="700"></canvas>
+        <div id="instructions">
+            <div>使用 WASD 或方向键移动人物</div>
+            <div>走到物品区域自动触发交互</div>
+        </div>
+    </div>
+    
+    <div id="itemModal">
+        <div id="itemContent">
+            <span id="closeBtn">&times;</span>
+            <div id="itemTitle"></div>
+            <div id="itemDescription"></div>
+            <div id="imageCarousel">
+                <div id="imageContainer">
+                    <div id="imageSlider"></div>
+                    <button id="prevBtn" class="carousel-btn">‹</button>
+                    <button id="nextBtn" class="carousel-btn">›</button>
+                    <div id="imageCounter"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Chat Widgets -->
+    <div id="aiChatToggle" title="AI 导览">💬</div>
+    <div id="aiChatWindow">
+        <div id="aiChatHeader">
+            <span class="title">AI 导览员</span>
+            <div class="actions">
+                <button id="aiOpenSettings" class="icon-btn">设置</button>
+                <button id="aiCloseBtn" class="icon-btn">关闭</button>
+            </div>
+        </div>
+        <div id="aiChatMessages"></div>
+        <div id="aiChatInputBar">
+            <textarea id="aiChatText" placeholder="就辛亥革命相关主题提问，Shift+Enter换行"></textarea>
+            <button id="aiSendBtn">发送</button>
+        </div>
+        <div id="aiSettingsPanel">
+            <label>API Base URL</label>
+            <input id="aiBaseUrl" placeholder="https://api.deepseek.com/v1/chat/completions" />
+            <label>Model</label>
+            <input id="aiModel" placeholder="deepseek-chat" />
+            <label>API Key（仅保存在本机浏览器，不会写入代码）</label>
+            <input id="aiApiKey" type="password" placeholder="粘贴你的API Key" />
+            <button id="aiSaveSettings">保存设置</button>
+        </div>
+    </div>
+    
+    <!-- 可选：本地密钥注入（如存在） -->
+    <script src="config.local.js"></script>
+    
+    <script src="game.js"></script>
+</body>
+</html>
